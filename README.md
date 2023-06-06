@@ -19,12 +19,6 @@ void loop() {
 
 But in Zig.
 
-### Step-by-step(In ArchLinux):
-1. Updating my setup:
-    - > $ yay -Syyu
-2. Installing dependencies:
-    - > $ yay -S avr-libc
-    - > $ yay -S avrdude
-    - > $ yay -S avr-gdb
-    - > $ yay -S avr-gcc
-    - > $ yay -S avr-binutils
+#### Summary:
+1. [Example in Pure C](./c/README.md)
+1. [Zig implementation](./zig/README.md)
