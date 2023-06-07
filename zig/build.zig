@@ -9,7 +9,7 @@ pub fn build(b: *Build) void {
         .cpu_arch = Target.Cpu.Arch.avr,
         .cpu_model = .{
             //.explicit = &Target.avr.cpu.atmega88p,
-            .explicit = &Target.avr.cpu.atmega88p,
+            .explicit = &Target.avr.cpu.atmega328p,
         },
         .os_tag = Target.Os.Tag.freestanding,
         .abi = .none,
@@ -18,38 +18,26 @@ pub fn build(b: *Build) void {
     // Standard optimization options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
     // set a preferred release mode, allowing the user to decide how to optimize.
-    const optimize = b.standardOptimizeOption(.{});
+    const optimize = .ReleaseSafe;
 
     const exe = b.addExecutable(.{
-        .name = "zig",
+        .name = "ziguino",
         // In this case the main source file is merely a path, however, in more
         // complicated build scripts, this could be a generated file.
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = .{ .path = "src/start.zig" },
         // the target that we declared:
         .target = target,
         .optimize = optimize,
     });
 
-    exe.addIncludePath("/usr/avr/include");
     exe.setLinkerScriptPath(std.build.FileSource{ .path = "src/linker.ld" });
-    exe.linkLibC();
-
-    // This declares intent for the executable to be installed into the
-    // standard location when the user invokes the "install" step (the default
-    // step when running `zig build`).
-    exe.install();
+    exe.install(); // zig build
 
     const tty = b.option([]const u8, "tty", "Specify Arduino's port | default : /dev/ttyACM0") orelse "/dev/ttyACM0";
 
     const bin_path = b.getInstallPath(exe.install_step.?.dest_dir, exe.out_filename);
 
-    const flash_command: u8 = blk: {
-        var tmp = std.ArrayList(u8).init(b.allocator);
-        try tmp.appendSlice("-Uflash:w:");
-        try tmp.appendSlice(bin_path);
-        try tmp.appendSlice(":e");
-        break :blk tmp.toOwnedSlice();
-    };
+    const flash_command = b.fmt("-Uflash:w: {s} :e", .{bin_path});
 
     const upload = b.step(
         "upload",
