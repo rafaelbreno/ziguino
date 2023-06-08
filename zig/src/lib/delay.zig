@@ -1,17 +1,11 @@
 const cpu = @import("cpu.zig");
 
+const cyclesPerMs: u32 = cpu.F_CPU / 10000;
+
 pub fn delay_ms(ms: u32) void {
-    var iterations: u64 = @as(u64, ms) * (cpu.F_CPU / 1000);
-    var iter: usize = @ptrToInt(&iterations);
-    for (iter) |_| {
-        // inline assembly
-        //  - asm - Defines the inline assembly
-        //  - `volatile` is an optional modifier that tells Zig this
-        //      inline assembly expression has side-effects. Without
-        //      `volatile`, Zig is allowed to delete the inline assembly
-        //      code if the result is unused.
-        asm volatile (
-            \\ nop
-        );
+    var count: u32 = 0;
+    var cycles: u32 = ms * cyclesPerMs;
+    while (count < cycles) : (count += 1) {
+        asm volatile ("nop");
     }
 }
