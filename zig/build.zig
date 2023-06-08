@@ -37,7 +37,8 @@ pub fn build(b: *Build) void {
 
     const bin_path = b.getInstallPath(exe.install_step.?.dest_dir, exe.out_filename);
 
-    const flash_command = b.fmt("-Uflash:w: {s} :e", .{bin_path});
+    // Memory operation
+    const flash_command = b.fmt("-U flash:w:{s}", .{bin_path});
 
     const upload = b.step(
         "upload",
@@ -45,13 +46,14 @@ pub fn build(b: *Build) void {
     );
 
     const avrdude = b.addSystemCommand(&.{
-        "avrdude",
-        "-carduino",
-        "-patmega328p",
-        "-D",
-        "-P",
-        tty,
-        flash_command,
+        "avrdude", // the binary to upload things to Microcontrollers
+        "-F", // Override invalid signature or initialisation check
+        "-V", // Do not verify
+        "-carduino", // Specify the programmer type, in this case `arduino`
+        "-p ATMEGA328p", // Specify the AVR device
+        b.fmt("-P {s}", .{tty}), // Specify the connection port
+        "-b 115200", // Baud Rate
+        flash_command, // Memory operation
     });
 
     upload.dependOn(&avrdude.step);
@@ -77,7 +79,7 @@ pub fn build(b: *Build) void {
     const screen = b.addSystemCommand(&.{
         "screen",
         tty,
-        "115200", // TODO: WTF IS THIS?
+        "115200",
     });
 
     monitor.dependOn(&screen.step);
