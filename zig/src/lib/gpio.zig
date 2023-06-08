@@ -1,4 +1,4 @@
-const regs = @import("atmega328p.zig").registries;
+const regs = @import("atmega328p.zig").registers;
 
 pub fn init(comptime pin: u8, comptime dir: enum { in, out }) void {
     regs.PORTB.DDRB.* = @as(u8, @enumToInt(dir)) << pin;
